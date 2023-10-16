@@ -1,10 +1,14 @@
+import { Request, Response } from "express";
 import httpStatus from "http-status";
+import ApiError from "../../../errors/ApiError";
 import catchAsync from "../../../shared/catchAsync";
 import sendResponse from "../../../shared/sendResponse";
-import { ILoginAndUserResponse, ILoginAndUserResponseVerify, IUserAndLogin } from "./auth.interface";
+import {
+  ILoginAndUserResponse,
+  ILoginAndUserResponseVerify,
+  IUserAndLogin
+} from "./auth.interface";
 import { AuthUserService } from "./auth.service";
-import { Request, Response } from "express";
-import ApiError from "../../../errors/ApiError";
 
 const createUser = catchAsync(async (req: Request, res: Response) => {
   const { ...data } = req.body;
@@ -18,7 +22,7 @@ const createUser = catchAsync(async (req: Request, res: Response) => {
 });
 
 const verify = catchAsync(async (req: Request, res: Response) => {
-  const {email, otp } = req.body;
+  const { email, otp } = req.body;
   const result = await AuthUserService.verify(email, otp);
   sendResponse<ILoginAndUserResponse>(res, {
     statusCode: httpStatus.OK,
@@ -27,35 +31,6 @@ const verify = catchAsync(async (req: Request, res: Response) => {
     data: result
   });
 });
-
-
-const loginUser = catchAsync(async (req: Request, res: Response) => {
-  const { ...data } = req.body;
-  const result = await AuthUserService.loginUser(data);
-  sendResponse<ILoginAndUserResponse>(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    messages: "User login Successfully",
-    data: result
-  });
-});
-
-
-const googleLogin = catchAsync(async (req: Request, res: Response) => {
-  if (!req.user) {
-    // Handle the case where user data is not available
-    throw new ApiError(httpStatus.NOT_FOUND, "user not exist");
-  }
-  const user = req.user as IUserAndLogin;
-  const result = await AuthUserService.googleLogin(user);
-  sendResponse<ILoginAndUserResponse>(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    messages: "User login Successfully",
-    data: result
-  });
-});
-
 
 const profileGet = catchAsync(async (req: Request, res: Response) => {
   const user = req.userData;
@@ -67,7 +42,6 @@ const profileGet = catchAsync(async (req: Request, res: Response) => {
     data: result
   });
 });
-
 
 const updateUser = catchAsync(async (req: Request, res: Response) => {
   const editData = req.body;
@@ -81,17 +55,46 @@ const updateUser = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-
-const changePassword = catchAsync(async (req:Request, res: Response) => {
+const changePassword = catchAsync(async (req: Request, res: Response) => {
   const user = req.userData;
-  const {...updateData} = req.body;
-await AuthUserService.changePassword(user, updateData);
-sendResponse(res, {
-  statusCode: httpStatus.OK,
-  success: true,
-  messages: 'Change Password Successfully'
-})
-})
+  const { ...updateData } = req.body;
+  await AuthUserService.changePassword(user, updateData);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    messages: "Change Password Successfully"
+  });
+});
+
+// login and facebook and google auth start
+
+const loginUser = catchAsync(async (req: Request, res: Response) => {
+  const { ...data } = req.body;
+  const result = await AuthUserService.loginUser(data);
+  sendResponse<ILoginAndUserResponse>(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    messages: "User login Successfully",
+    data: result
+  });
+});
+
+const googleLogin = catchAsync(async (req: Request, res: Response) => {
+  console.log(req.user);
+  if (!req.user) {
+    // Handle the case where user data is not available
+    throw new ApiError(httpStatus.NOT_FOUND, "user not exist");
+  }
+  const user = req.user as IUserAndLogin;
+  const result = await AuthUserService.googleLogin(user);
+  sendResponse<ILoginAndUserResponse>(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    messages: "User login Successfully",
+    data: result
+  });
+});
+//end of auth
 
 export const AuthUserController = {
   createUser,

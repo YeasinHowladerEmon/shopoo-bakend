@@ -5,12 +5,9 @@ import authGuard from "../../middleware/authGuard";
 import { ENUM_USER_ROLE } from "../../../enums/user";
 const router = express.Router();
 
+// login auth
 //login method
 router.post("/login", AuthUserController.loginUser);
-
-//create a user to sign up
-router.post("/create-user", AuthUserController.createUser);
-router.post("/verify", AuthUserController.verify);
 
 //google and facebook
 router.get(
@@ -20,22 +17,27 @@ router.get(
 router.get(
   "/auth/google/callback",
   passport.authenticate("google", {
-    successRedirect: "/login/success",
     failureRedirect: "/login"
-  })
+  }),
+  AuthUserController.googleLogin
 );
-router.get("/login/success", AuthUserController.googleLogin);
+// router.get("/login/success", AuthUserController.googleLogin);
 
-router.post("/createUser-facebook");
-//end of google and facebook
+// router.post("/createUser-facebook");
+//end of google and facebook and login auth
 
+
+
+//create a user to sign up
+router.post("/create-user", AuthUserController.createUser);
+router.post("/verify", AuthUserController.verify);
 // user own profile
 router.get(
   "/profile",
   authGuard(
     ENUM_USER_ROLE.USER,
     ENUM_USER_ROLE.SUPER_ADMIN,
-    ENUM_USER_ROLE.SELLER
+    ENUM_USER_ROLE.ADMIN,
   ),
   AuthUserController.profileGet
 );
@@ -43,14 +45,14 @@ router.get(
 // user can also update her profile like name change only
 router.patch(
   "/update-user",
-  authGuard(ENUM_USER_ROLE.USER, ENUM_USER_ROLE.SELLER),
+  authGuard(ENUM_USER_ROLE.USER),
   AuthUserController.updateUser
 );
 
 // user change her password what he want
 router.patch(
   "/change-password",
-  authGuard(ENUM_USER_ROLE.USER, ENUM_USER_ROLE.SELLER),
+  authGuard(ENUM_USER_ROLE.USER),
   AuthUserController.changePassword
 );
 

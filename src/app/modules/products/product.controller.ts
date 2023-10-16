@@ -8,16 +8,8 @@ import pick from "../../../shared/pick";
 import { productFilterableFields } from "./product.constent";
 import { UpdateWriteOpResult } from "mongoose";
 
-const addNewProduct = catchAsync(async (req: Request, res: Response) => {
-    const body = req.body;
-    const result = await ProductService.addNewProduct(req.body);
-    sendResponse<IProduct>(res, {
-        statusCode: httpStatus.OK,
-        success: true,
-        messages: "Product Create Successfully",
-        data: result
-    })
-});
+//notice
+// we have product to access only admin and we write code inside admin folder so that we also read very well. and other product method product folder
 
 const products = catchAsync(async (req: Request, res: Response) => {
     const filters = pick(req.query, productFilterableFields)
@@ -31,7 +23,7 @@ const products = catchAsync(async (req: Request, res: Response) => {
 })
 const productCategory = catchAsync(async (req: Request, res: Response) => {
     const result = await ProductService.productCategory();
-    sendResponse<IProduct[]>(res, {
+    sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
         messages: "Product retrieved Successfully",
@@ -68,32 +60,10 @@ const productReviewGet = catchAsync(async (req: Request, res: Response) => {
         data: result
     })
 })
-const productEdit = catchAsync(async (req: Request, res: Response) => {
-    const id = req.params.id;
-    const editData = req.body;
-    const result = await ProductService.productEdit(id, editData);
-    sendResponse<IProduct>(res, {
-        statusCode: httpStatus.OK,
-        success: true,
-        messages: "Product edited Successfully",
-        data: result
-    })
-})
-const productDelete = catchAsync(async (req: Request, res: Response) => {
-    const result = await ProductService.productDelete(req.params.id);
-    sendResponse<IProduct>(res, {
-        statusCode: httpStatus.OK,
-        success: true,
-        messages: "Product delete Successfully",
-        data: result
-    })
-})
+
 
 export const ProductsController = {
-    addNewProduct,
-    productDelete,
     productDetails,
-    productEdit,
     productReviewGet,
     productReview,
     products,

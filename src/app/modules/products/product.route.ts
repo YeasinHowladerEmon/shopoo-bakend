@@ -3,8 +3,8 @@ import { ProductsController } from "./product.controller";
 
 const router = express.Router();
 
-//post new product
-router.post("/add-new-product", ProductsController.addNewProduct);
+//notice
+// we have product to access only admin and we write code inside admin folder so that we also read very well. and other product method code inside product folder
 
 //get all products
 router.get("/all-products", ProductsController.products);
@@ -19,9 +19,4 @@ router.get("/:id", ProductsController.productDetails);
 router.post("/review/:id", ProductsController.productReview);
 router.get("/review/:id", ProductsController.productReviewGet);
 
-// this route using edit product
-router.patch("/editProduct/:id", ProductsController.productEdit);
-
-// this route using book delete
-router.delete("/product/:id", ProductsController.productDelete);
 export const ProductsRoutes = router;

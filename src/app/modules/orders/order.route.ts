@@ -9,6 +9,8 @@ router.post("/create-order");
 //get all orders
 router.get("/all-orders");// admin only access and order owen user we can use auth guard
 
+router.patch("/all-orders");// admin only access we can use auth guard 
+
 
 // details order
 router.get("/:id"); // admin only access and order owen user

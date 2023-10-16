@@ -51,7 +51,6 @@ const verify = async (
   verifyOtp: string
 ): Promise<ILoginAndUserResponse> => {
   try {
-
     const registrationData = pendingRegistrations.get(userEmail);
     if (!registrationData) {
       throw new ApiError(
@@ -60,8 +59,7 @@ const verify = async (
       );
     }
 
-    const {payload, otp} = registrationData
-
+    const { payload, otp } = registrationData;
 
     if (otp !== verifyOtp) {
       throw new ApiError(httpStatus.BAD_GATEWAY, "The OTP is Incorrect");
@@ -98,6 +96,56 @@ const verify = async (
   }
 };
 
+const profileGet = async (id: string): Promise<IUserAndLogin | null> => {
+  const result = await User.findOne({ _id: new ObjectId(id) });
+  return result;
+};
+
+const updateUser = async (
+  user: JwtPayload | null,
+  payload: Partial<IUserAndLogin>
+) => {
+  const result = await User.findOneAndUpdate(
+    { _id: new ObjectId(user!.userId) },
+    payload,
+    { new: true }
+  );
+  return result;
+};
+
+type IChangePassword = {
+  oldPassword: string;
+  newPassword: string;
+};
+
+const changePassword = async (
+  user: JwtPayload | null,
+  payload: IChangePassword
+) => {
+  const { oldPassword, newPassword } = payload;
+  console.log(user);
+
+  const isUserExist = await User.findOne({ _id: new ObjectId(user?.userId) });
+  if (!isUserExist) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User does not exist");
+  }
+
+  if (
+    isUserExist.password &&
+    !(await User.isPasswordMatched(oldPassword, isUserExist.password))
+  ) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, "Old Password is incorrect");
+  }
+
+  const hashedNewPassword = await bcryptHelpers.hashPassword(newPassword);
+  isUserExist.password = hashedNewPassword;
+
+  // updating using save()
+
+  isUserExist.save();
+};
+
+// login auth start
 const googleLogin = async (
   payload: IUserAndLogin
 ): Promise<ILoginAndUserResponse> => {
@@ -155,55 +203,7 @@ const loginUser = async (
     accessToken
   };
 };
-
-const profileGet = async (id: string): Promise<IUserAndLogin | null> => {
-  const result = await User.findOne({ _id: new ObjectId(id) });
-  return result;
-};
-
-const updateUser = async (
-  user: JwtPayload | null,
-  payload: Partial<IUserAndLogin>
-) => {
-  const result = await User.findOneAndUpdate(
-    { _id: new ObjectId(user!.userId) },
-    payload,
-    { new: true }
-  );
-  return result;
-};
-
-type IChangePassword = {
-  oldPassword: string;
-  newPassword: string;
-};
-
-const changePassword = async (
-  user: JwtPayload | null,
-  payload: IChangePassword
-) => {
-  const { oldPassword, newPassword } = payload;
-  console.log(user);
-
-  const isUserExist = await User.findOne({ _id: new ObjectId(user?.userId) });
-  if (!isUserExist) {
-    throw new ApiError(httpStatus.NOT_FOUND, "User does not exist");
-  }
-
-  if (
-    isUserExist.password &&
-    !(await User.isPasswordMatched(oldPassword, isUserExist.password))
-  ) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, "Old Password is incorrect");
-  }
-
-  const hashedNewPassword = await bcryptHelpers.hashPassword(newPassword);
-  isUserExist.password = hashedNewPassword;
-
-  // updating using save()
-
-  isUserExist.save();
-};
+//end
 
 export const AuthUserService = {
   createUser,
